@@ -1,0 +1,547 @@
+openapi: 3.0.1
+info:
+  title: Swagger Student
+  description: This is a  Student list server.
+  termsOfService: http://swagger.io/terms/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://student.swagger.io/v2
+- url: http://student.swagger.io/v2
+tags:
+- name: student
+  description: Everything about your Student
+  externalDocs:
+    description: Find out more
+    url: http://swagger.io
+    
+- name: studentList
+  description: Everything about your Student List
+  externalDocs:
+    description: Find out more
+    url: http://swagger.io
+
+- name: user
+  description: Everything about your user
+  externalDocs:
+    description: Find out more
+    url: http://swagger.io
+
+
+paths:
+  /student:
+    post:
+      tags:
+      - student
+      summary: Add a new student to the list
+      operationId: addStudent
+      requestBody:
+        description: Student object that needs to be added to the list
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreation'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+
+      x-codegen-request-body-name: body
+  /student/{studentId}:
+    get:
+      tags:
+      - student
+      summary: Find student by ID
+      description: Returns a single student
+      operationId: getStudentById
+      parameters:
+      - name: studentId
+        in: path
+        description: ID of student to return
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Student not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+          
+      security:
+      - student_auth:
+        - write:user
+        - read:user
+          
+      
+    put:
+      tags:
+      - student
+      summary: Updates a student
+      description: Update student by id
+      operationId: updateStudentWithForm
+      parameters:
+      - name: studentId
+        in: path
+        description: ID of student that needs to be updated
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentCreation'
+            
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentCreation'
+                
+        400:
+          description: Invalid ID supplied
+          content: {}
+                
+        405:
+          description: Invalid input
+          content: {}
+        
+        500:
+          description: Internal Server Error
+          content: {}
+          
+      security:
+      - student_auth:
+        - write:user
+        - read:user
+    delete:
+      tags:
+      - student
+      summary: Deletes a student
+      operationId: deleteStudent
+      parameters:
+      - name: api_key
+        in: header
+        schema:
+          type: string
+      - name: studentId
+        in: path
+        description: Student id to delete
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+       200:
+          description: successful operation
+          content: {}
+      
+       400:
+          description: Invalid ID supplied
+          content: {}
+       404:
+          description: Student not found
+          content: {}
+        
+       500:
+          description: Internal Server Error
+          content: {}
+          
+      security:
+      - student_auth:
+        - write:user
+        - read:user
+  /studentRankings:
+    get:
+      tags:
+      - studentList
+      summary: Returns students by rating
+      description: Returns a map of status codes to quantities
+      operationId: getRankedListOfStudents
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                  
+        404:
+          description: Student List not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+                  
+  /user:
+    post:
+      tags:
+      - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreation'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+      x-codegen-request-body-name: body
+  /user/login:
+    get:
+      tags:
+      - user
+      summary: Logs user into the system
+      operationId: loginUser
+      parameters:
+      - name: username
+        in: query
+        description: The user name for login
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: query
+        description: The password for login in clear text
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: string
+        400:
+          description: Invalid username/password supplied
+          content: {}
+          
+        404:
+          description: User not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+  /user/logout:
+    get:
+      tags:
+      - user
+      summary: Logs out current logged in user session
+      operationId: logoutUser
+      responses:
+        200:
+          description: successful operation
+          content: {}
+          
+        400:
+          description: Invalid username supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+    
+      
+  /user/{username}:
+    get:
+      tags:
+      - user
+      summary: Get user by user name
+      operationId: getUserByName
+      parameters:
+      - name: username
+        in: path
+        description: 'The name that needs to be fetched. Use user1 for testing. '
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Invalid username supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+          
+      security:
+      - student_auth:
+        - write:user
+        - read:user
+    put:
+      tags:
+      - user
+      summary: Updated user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      parameters:
+      - name: username
+        in: path
+        description: name that need to be updated
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Updated user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreation'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreation'
+      
+        400:
+          description: Invalid user supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+          
+      security:
+      - student_auth:
+        - write:user
+        - read:user
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+      - name: username
+        in: path
+        description: The name that needs to be deleted
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreation'
+      
+        400:
+          description: Invalid username supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+          
+        500:
+          description: Internal Server Error
+          content: {}
+          
+      security:
+      - student_auth:
+        - write:user
+        - read:user
+                  
+components:
+  schemas:
+    Student:
+      required:
+      - class
+      - lastName
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: Ben
+        lastName:
+          type: string
+          example: Kenobi
+        class:
+          type: string
+          example: KN-214
+        averageMark:
+          type: integer
+          example: 78
+        idOfUser:
+          type: integer
+      xml:
+        name: Student
+        
+    StudentCreation:
+      required:
+      - class
+      - lastName
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: Ben
+        lastName:
+          type: string
+          example: Kenobi
+        class:
+          type: string
+          example: KN-214
+        averageMark:
+          type: integer
+          example: 78
+      xml:
+        name: Student
+    
+    UserCreation:
+      type: object
+      properties:
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+        userStatus:
+          type: integer
+          description: User Status
+          format: int32
+      xml:
+        name: User
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+        userStatus:
+          type: integer
+          description: User Status
+          format: int32
+      xml:
+        name: User
+        
+        
+    
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+  
+  securitySchemes:
+  
+  
+    studebntLis_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://petstore.swagger.io/oauth/dialog
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+            
+    student_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://student.swagger.io/oauth/dialog
+          scopes:
+            write:user: modify student in your account
+            read:user: read your student
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+  
+
