@@ -1,0 +1,182 @@
+openapi: 3.0.1
+info:
+  title: Swagger Student
+  description: This is a  Student list server.
+  termsOfService: http://swagger.io/terms/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://student.swagger.io/v2
+- url: http://student.swagger.io/v2
+tags:
+- name: student
+  description: Everything about your Student
+  externalDocs:
+    description: Find out more
+    url: http://swagger.io
+paths:
+  /student:
+    post:
+      tags:
+      - student
+      summary: Add a new student to the list
+      operationId: addStudent
+      requestBody:
+        description: Student object that needs to be added to the list
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Student'
+        required: true
+      responses:
+        405:
+          description: Invalid input
+          content: {}
+      x-codegen-request-body-name: body
+  /student/{studentId}:
+    get:
+      tags:
+      - student
+      summary: Find student by ID
+      description: Returns a single student
+      operationId: getStudentById
+      parameters:
+      - name: studentId
+        in: path
+        description: ID of student to return
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Student'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Student not found
+          content: {}
+    put:
+      tags:
+      - student
+      summary: Updates a student in the store with form data
+      description: Update student by id
+      operationId: updateStudentWithForm
+      parameters:
+      - name: studentId
+        in: path
+        description: ID of student that needs to be updated
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: Updated name of the student
+                lastName:
+                  type: string
+                  description: Updated last name of the student
+                averageMark:
+                  type: integer
+                  description: Updated average mark of the student
+                  format: int64
+      responses:
+        405:
+          description: Invalid input
+          content: {}
+    delete:
+      tags:
+      - student
+      summary: Deletes a student
+      operationId: deleteStudent
+      parameters:
+      - name: api_key
+        in: header
+        schema:
+          type: string
+      - name: studentId
+        in: path
+        description: Student id to delete
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Student not found
+          content: {}
+  /studentRankings:
+    get:
+      tags:
+      - student
+      summary: Returns students by rating
+      description: Returns a map of status codes to quantities
+      operationId: getRankedListOfStudents
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+components:
+  schemas:
+    Student:
+      required:
+      - class
+      - lastName
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: Ben
+        lastName:
+          type: string
+          example: Kenobi
+        class:
+          type: string
+          example: KN-214
+        averageMark:
+          type: integer
+          example: 78
+      xml:
+        name: Student
+  securitySchemes:
+    studebntLis_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://petstore.swagger.io/oauth/dialog
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
