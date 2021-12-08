@@ -1,0 +1,20 @@
+#POST http://127.0.0.1:5000/user
+#Content-Type: application/json
+#
+#{
+#    "username" : "Voavn",
+#    "firstName" : "Volodya",
+#    "lastName" : "Andiev",
+#    "phone" : "88005553535",
+#    "email" : "post@post.xyz",
+#    "password" : "2135114"
+#}
+#
+
+GET http://127.0.0.1:5000/login
+Content-Type: application/json
+
+{
+    "username" : "Voavn",
+    "password" : "2135114"
+}
